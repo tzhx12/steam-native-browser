@@ -94,6 +94,47 @@
                            TextWrapping="Wrap"
                            Text="自动定位 Steam、开启 CEF 调试端口，并在 Steam 进程内弹出一个带地址栏和多标签页的原生 Chromium 窗口。" />
 
+                <!-- 低权限环境提示 -->
+                <Border x:Name="EnvBanner"
+                        Visibility="Collapsed"
+                        Margin="0,16,0,0"
+                        Background="#FFF7DC"
+                        BorderBrush="#EFDFA8"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="14,11">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="&#xE7BA;"
+                                   FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                   FontSize="16"
+                                   Foreground="#8A5A00"
+                                   VerticalAlignment="Center" />
+
+                        <StackPanel Grid.Column="1" Margin="10,0,14,0" VerticalAlignment="Center">
+                            <TextBlock Text="当前运行在低权限环境，无法自动启动 Steam"
+                                       FontSize="12.5" FontWeight="SemiBold" Foreground="#6B4600" />
+                            <TextBlock x:Name="EnvBannerText"
+                                       FontSize="12"
+                                       Foreground="#6B4600"
+                                       TextWrapping="Wrap"
+                                       Margin="0,2,0,0"
+                                       Text="请关闭本程序，在资源管理器里双击 SteamNativeBrowser.exe 运行。" />
+                        </StackPanel>
+
+                        <Button x:Name="ElevateButton" Grid.Column="2"
+                                Content="以管理员身份重启"
+                                Style="{StaticResource DefaultButton}"
+                                Height="30" VerticalAlignment="Center"
+                                Click="Elevate_Click" />
+                    </Grid>
+                </Border>
+
                 <!-- ============ 状态 ============ -->
                 <Border Style="{StaticResource Card}" Margin="0,20,0,0">
                     <Grid>

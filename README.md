@@ -76,6 +76,22 @@ dotnet publish src\SteamNativeBrowser\SteamNativeBrowser.csproj -c Release -r wi
   --self-contained true -p:PublishSingleFile=true -o dist
 ```
 
+## 权限说明（重要）
+
+`SteamNativeBrowser.exe` 需要以**普通桌面进程（Medium 完整性）**运行，才能替你把 Steam 拉起来。
+
+如果它被聊天工具、沙箱、下载器的“在沙箱中打开 / 打开文件”以 **Low 完整性**令牌启动，Windows 的 no-write-up 规则会让它无法写入 `HKCU\Software\Valve\Steam`；Steam 继承这个令牌后就会弹「Steam 注册表路径当前不可写」。
+
+v1.1 起程序会自己识别这种情况：
+
+- 启动时检测完整性级别，并真实试写一次注册表；
+- 不通过时顶部显示黄色提示条，**并且不会真正启动 Steam**（避免再把 Steam 拉进报错状态）；
+- 日志说明原因，给出两个出口：在资源管理器里双击运行，或点「以管理员身份重启」。
+
+![低权限提示](docs/screenshot-low-integrity.png)
+
+> 低权限下如果 Steam 已经以调试模式在运行，「一键调出」仍然可用——只有“自动启动 Steam”被阻止。
+
 ## 常见问题
 
 **端口 8080 被占用**：应用会识别并提示；请先释放该端口（它必须是 Steam CEF，UA 含 `Valve Steam Client`）。
@@ -84,7 +100,13 @@ dotnet publish src\SteamNativeBrowser\SteamNativeBrowser.csproj -c Release -r wi
 
 **Steam 以管理员身份运行**：应用以普通权限运行即可；若要重启 Steam，需要同权限（应用会记录失败原因）。
 
-**出现「Steam 注册表路径当前不可写」**：只在受限令牌（沙箱 / 低完整性）下出现。正常桌面账户对 `HKCU\Software\Valve\Steam` 有 FullControl，双击启动不受影响。
+**出现「Steam 注册表路径当前不可写」**：说明拉起 Steam 的进程处于低完整性/受限令牌（见上面「权限说明」）。按顺序处理：
+
+1. 关闭程序，在资源管理器里双击 `SteamNativeBrowser.exe` 重新运行；
+2. 仍不行时，点界面上的「以管理员身份重启」；
+3. 若确认是资源管理器双击启动仍然报错，用 `Get-Acl HKCU:\Software\Valve\Steam` 检查是否被加入了 `NT AUTHORITY\RESTRICTED` 的只读 ACE（正常情况下不应存在），清理前请先备份该键。
+
+**从聊天窗口里点开 exe 后功能被禁用**：这是预期行为，说明检测到了低权限启动；换成资源管理器双击即可。
 
 **窗口打不开 / 空白**：先用「打开调试面板」访问 `http://localhost:8080` 确认 CEF 正常；地址栏换一个可访问的站点再试。
 

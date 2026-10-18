@@ -40,6 +40,14 @@ public static class SteamCefController
             throw new FileNotFoundException("指定目录下找不到 steam.exe。", steamExe);
         }
 
+        // 低完整性 / 沙箱进程无法写 HKCU，Steam 启动后会报“注册表路径当前不可写”。
+        if (!ProcessIntegrity.CanWriteSteamRegistry())
+        {
+            throw new InvalidOperationException(
+                "当前进程无法写入 Steam 注册表（常见于沙箱 / 低完整性启动），此时启动 Steam 会提示“注册表路径当前不可写”。" +
+                "请在资源管理器中双击运行本程序，或点击界面上的“以管理员身份重启”。");
+        }
+
         if (SteamLocator.IsSteamRunning())
         {
             log("Steam 正在运行但未开启调试端口，正在请求 Steam 退出…");

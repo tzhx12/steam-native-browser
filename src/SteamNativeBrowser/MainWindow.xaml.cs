@@ -63,6 +63,7 @@ public partial class MainWindow : Window
     {
         _steamPath = SteamLocator.FindSteamPath();
         UpdatePathUi();
+        CheckEnvironment();
 
         AppendLog(_steamPath is null
             ? "未自动找到 Steam，请点击“浏览…”手动指定安装目录。"
@@ -71,6 +72,54 @@ public partial class MainWindow : Window
         await RefreshStatusAsync(true);
         PageScroll.ScrollToTop();
         _statusTimer.Start();
+    }
+
+    /// <summary>低完整性 / 沙箱环境下启动 Steam 会触发“注册表不可写”，提前提示并给出出口。</summary>
+    private void CheckEnvironment()
+    {
+        var lowIntegrity = ProcessIntegrity.IsBelowMediumIntegrity();
+        var canWriteRegistry = ProcessIntegrity.CanWriteSteamRegistry();
+
+        if (canWriteRegistry && !lowIntegrity)
+        {
+            EnvBanner.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        EnvBanner.Visibility = Visibility.Visible;
+        ElevateButton.Visibility = ProcessIntegrity.IsElevated() ? Visibility.Collapsed : Visibility.Visible;
+
+        EnvBannerText.Text = lowIntegrity
+            ? "检测到低完整性 / 沙箱令牌（通常是从聊天工具、沙箱或“在沙箱中打开”启动的）。这种进程无法写入 Steam 注册表，Steam 启动后会提示“注册表路径当前不可写”。请关闭本程序，在资源管理器里双击运行；或点击右侧按钮以管理员身份重启。"
+            : "当前进程无法写入 Steam 注册表，启动 Steam 会失败。请检查 HKCU\\Software\\Valve\\Steam 的权限，或点击右侧按钮以管理员身份重启。";
+
+        AppendLog("警告：当前进程无法写入 Steam 注册表，已阻止自动启动 Steam。");
+    }
+
+    private void Elevate_Click(object sender, RoutedEventArgs e)
+    {
+        var exePath = Environment.ProcessPath;
+        if (string.IsNullOrEmpty(exePath))
+        {
+            AppendLog("无法定位当前程序路径，请手动以管理员身份运行。");
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(exePath)
+            {
+                UseShellExecute = true,
+                Verb = "runas",
+                WorkingDirectory = Path.GetDirectoryName(exePath) ?? AppContext.BaseDirectory,
+            });
+
+            Application.Current.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            AppendLog("以管理员身份重启失败（可能取消了 UAC）：" + ex.Message);
+        }
     }
 
     private async Task RefreshStatusAsync(bool verbose)
