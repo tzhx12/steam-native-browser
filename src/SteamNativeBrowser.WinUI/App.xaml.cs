@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using SteamNativeBrowser.WinUI.Services;
 
 namespace SteamNativeBrowser.WinUI;
 
@@ -13,6 +14,8 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        AccentService.ApplyAtStartup();
+
         MainWindow = new MainWindow();
         MainWindow.Activate();
     }

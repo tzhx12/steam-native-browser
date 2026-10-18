@@ -88,6 +88,7 @@ public sealed partial class MainWindow : Window
         var page = tag switch
         {
             "about" => typeof(AboutPage),
+            "settings" => typeof(SettingsPage),
             _ => typeof(HomePage),
         };
 
@@ -96,7 +97,22 @@ public sealed partial class MainWindow : Window
             ContentFrame.Navigate(page);
         }
     }
+
+    /// <summary>供页面内跳转使用（例如设置页打开关于页）。</summary>
+    public void NavigateTo(string tag)
+    {
+        var item = NavView.MenuItems
+            .OfType<NavigationViewItem>()
+            .FirstOrDefault(i => string.Equals(i.Tag as string, tag, StringComparison.OrdinalIgnoreCase));
+
+        if (item is not null)
+        {
+            NavView.SelectedItem = item;
+        }
+    }
 }
+
+
 
 
 

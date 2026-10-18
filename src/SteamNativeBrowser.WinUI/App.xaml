@@ -7,14 +7,7 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- 品牌强调色（覆盖系统强调色，避免受壁纸取色影响） -->
-            <Color x:Key="SystemAccentColor">#0067C0</Color>
-            <Color x:Key="SystemAccentColorLight1">#1A76C9</Color>
-            <Color x:Key="SystemAccentColorLight2">#4A93D9</Color>
-            <Color x:Key="SystemAccentColorLight3">#7FB3E6</Color>
-            <Color x:Key="SystemAccentColorDark1">#0059A8</Color>
-            <Color x:Key="SystemAccentColorDark2">#004A8C</Color>
-            <Color x:Key="SystemAccentColorDark3">#003B70</Color>
+            <!-- 强调色默认跟随系统；自定义颜色在启动时由 AccentService 注入 -->
 
             <!-- 卡片 -->
             <Style x:Key="CardStyle" TargetType="Border">

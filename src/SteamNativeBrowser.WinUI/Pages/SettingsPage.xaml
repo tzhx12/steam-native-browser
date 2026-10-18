@@ -1,0 +1,50 @@
+<Page x:Class="SteamNativeBrowser.WinUI.Pages.SettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="Transparent">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="860" Padding="32,18,32,44" Spacing="16" HorizontalAlignment="Center">
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="设置" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Style="{StaticResource MutedBodyStyle}"
+                           Text="个性化外观与应用选项。所有设置保存在本机用户目录，不会上传。" />
+            </StackPanel>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="个性化" Style="{StaticResource SectionTitleStyle}" />
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="强调色" FontWeight="SemiBold" />
+                        <TextBlock Style="{StaticResource MutedCaptionStyle}"
+                                   Text="默认跟随 Windows 系统的强调色；也可以固定为下面任意一种颜色。" />
+                    </StackPanel>
+
+                    <RadioButtons x:Name="AccentModeRadios" SelectionChanged="AccentModeRadios_SelectionChanged">
+                        <RadioButton Content="跟随系统" Tag="System" />
+                        <RadioButton Content="自定义颜色" Tag="Custom" />
+                    </RadioButtons>
+
+                    <StackPanel x:Name="PalettePanel" Orientation="Horizontal" Spacing="8" Visibility="Collapsed" />
+
+                    <TextBlock Style="{StaticResource MutedCaptionStyle}"
+                               Text="更改强调色后需要重启应用才能全局生效（按钮、开关、链接、选中条都会更新）。" />
+
+                    <Button x:Name="ApplyButton" Content="应用并重启"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Click="Apply_Click" HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="其他" Style="{StaticResource SectionTitleStyle}" />
+                    <HyperlinkButton Content="打开「关于」页" Click="About_Click" Padding="0" />
+                    <TextBlock x:Name="CurrentText" Style="{StaticResource MutedCaptionStyle}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
