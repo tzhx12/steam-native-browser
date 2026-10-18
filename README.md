@@ -8,6 +8,8 @@
 
 ![关于](docs/winui-about.png)
 
+![设置](docs/winui-settings.png)
+
 ![调出的 Chromium 窗口](docs/screenshot-browser.png)
 
 ---
