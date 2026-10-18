@@ -16,8 +16,8 @@
     <Product>Steam 原生浏览器</Product>
     <AssemblyTitle>Steam 原生浏览器</AssemblyTitle>
     <Description>从 Steam 进程内部调出原生 Chromium 窗口</Description>
-    <Version>1.1.0</Version>
-    <FileVersion>1.1.0.0</FileVersion>
+    <Version>1.2.0</Version>
+    <FileVersion>1.2.0.0</FileVersion>
 
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>false</SelfContained>
@@ -34,4 +34,5 @@
   </ItemGroup>
 
 </Project>
+
 

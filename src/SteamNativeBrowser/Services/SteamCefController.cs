@@ -40,12 +40,12 @@ public static class SteamCefController
             throw new FileNotFoundException("指定目录下找不到 steam.exe。", steamExe);
         }
 
-        // 低完整性 / 沙箱进程无法写 HKCU，Steam 启动后会报“注册表路径当前不可写”。
-        if (!ProcessIntegrity.CanWriteSteamRegistry())
+        // 低完整性 / 沙箱进程、或注册表键被高权限改写过时，普通权限启动 Steam 会触发“注册表不可写”。
+        // 此时改为以管理员身份启动 Steam（UAC），只提权 Steam，不提权界面本身。
+        var needsElevation = !ProcessIntegrity.CanWriteSteamRegistry();
+        if (needsElevation)
         {
-            throw new InvalidOperationException(
-                "当前进程无法写入 Steam 注册表（常见于沙箱 / 低完整性启动），此时启动 Steam 会提示“注册表路径当前不可写”。" +
-                "请在资源管理器中双击运行本程序，或点击界面上的“以管理员身份重启”。");
+            log("当前权限无法写入 Steam 注册表，将以管理员身份启动 Steam（会弹出 UAC 授权，请点“是”）。");
         }
 
         if (SteamLocator.IsSteamRunning())
@@ -55,7 +55,7 @@ public static class SteamCefController
         }
 
         log($"正在以调试模式启动 Steam：steam.exe {LaunchArguments}");
-        StartSteam(steamExe, steamDirectory);
+        await StartSteamAsync(steamExe, steamDirectory, needsElevation).ConfigureAwait(false);
 
         log($"等待 CEF 调试端口（最多 {StartupTimeoutSeconds} 秒）…");
         var stopwatch = Stopwatch.StartNew();
@@ -75,14 +75,30 @@ public static class SteamCefController
             "等待 Steam CEF 调试端口超时。请确认 Steam 能正常启动并保持登录，然后重试。");
     }
 
-    private static void StartSteam(string steamExe, string workingDirectory)
+    private static async Task StartSteamAsync(string steamExe, string workingDirectory, bool elevated)
     {
         var info = new ProcessStartInfo(steamExe, LaunchArguments)
         {
             WorkingDirectory = workingDirectory,
             UseShellExecute = true,
         };
-        Process.Start(info);
+
+        if (elevated)
+        {
+            info.Verb = "runas";
+        }
+
+        try
+        {
+            // runas 会等待用户在 UAC 弹窗上做出选择，放到后台线程避免阻塞界面。
+            await Task.Run(() => Process.Start(info)).ConfigureAwait(false);
+        }
+        catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
+        {
+            throw new InvalidOperationException(
+                "已取消管理员授权（UAC），无法以当前权限启动 Steam。请重试并在 UAC 弹窗中点击“是”，" +
+                "或先在资源管理器里手动启动 Steam。");
+        }
     }
 
     private static async Task ShutdownAsync(string steamExe, Action<string> log, CancellationToken ct)

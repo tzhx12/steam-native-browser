@@ -117,21 +117,28 @@
                                    VerticalAlignment="Center" />
 
                         <StackPanel Grid.Column="1" Margin="10,0,14,0" VerticalAlignment="Center">
-                            <TextBlock Text="当前运行在低权限环境，无法自动启动 Steam"
+                            <TextBlock Text="当前权限不足，启动 Steam 需要管理员授权"
                                        FontSize="12.5" FontWeight="SemiBold" Foreground="#6B4600" />
                             <TextBlock x:Name="EnvBannerText"
                                        FontSize="12"
                                        Foreground="#6B4600"
                                        TextWrapping="Wrap"
                                        Margin="0,2,0,0"
-                                       Text="请关闭本程序，在资源管理器里双击 SteamNativeBrowser.exe 运行。" />
+                                       Text="自动启动 Steam 时会请求管理员权限（UAC）。" />
                         </StackPanel>
 
-                        <Button x:Name="ElevateButton" Grid.Column="2"
-                                Content="以管理员身份重启"
-                                Style="{StaticResource DefaultButton}"
-                                Height="30" VerticalAlignment="Center"
-                                Click="Elevate_Click" />
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button x:Name="CopyPathButton"
+                                    Content="复制路径"
+                                    Style="{StaticResource SubtleButton}"
+                                    Height="30" Margin="0,0,6,0"
+                                    Click="CopyPath_Click" />
+                            <Button x:Name="ElevateButton"
+                                    Content="以管理员身份重启"
+                                    Style="{StaticResource DefaultButton}"
+                                    Height="30"
+                                    Click="Elevate_Click" />
+                        </StackPanel>
                     </Grid>
                 </Border>
 

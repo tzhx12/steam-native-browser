@@ -74,26 +74,55 @@ public partial class MainWindow : Window
         _statusTimer.Start();
     }
 
-    /// <summary>低完整性 / 沙箱环境下启动 Steam 会触发“注册表不可写”，提前提示并给出出口。</summary>
+    /// <summary>低完整性 / 注册表不可写时给出诊断，并说明会通过 UAC 提权启动 Steam。</summary>
     private void CheckEnvironment()
     {
-        var lowIntegrity = ProcessIntegrity.IsBelowMediumIntegrity();
+        var rid = ProcessIntegrity.GetIntegrityRid();
+        var lowIntegrity = rid is int value && value < 0x2000;
         var canWriteRegistry = ProcessIntegrity.CanWriteSteamRegistry();
+        var elevated = ProcessIntegrity.IsElevated();
 
-        if (canWriteRegistry && !lowIntegrity)
+        App.Log(
+            $"integrity=0x{(rid.HasValue ? rid.Value.ToString("X4") : "????")} low={lowIntegrity} " +
+            $"canWriteRegistry={canWriteRegistry} elevated={elevated}");
+
+        if (canWriteRegistry)
         {
             EnvBanner.Visibility = Visibility.Collapsed;
             return;
         }
 
         EnvBanner.Visibility = Visibility.Visible;
-        ElevateButton.Visibility = ProcessIntegrity.IsElevated() ? Visibility.Collapsed : Visibility.Visible;
+        ElevateButton.Visibility = elevated ? Visibility.Collapsed : Visibility.Visible;
 
-        EnvBannerText.Text = lowIntegrity
-            ? "检测到低完整性 / 沙箱令牌（通常是从聊天工具、沙箱或“在沙箱中打开”启动的）。这种进程无法写入 Steam 注册表，Steam 启动后会提示“注册表路径当前不可写”。请关闭本程序，在资源管理器里双击运行；或点击右侧按钮以管理员身份重启。"
-            : "当前进程无法写入 Steam 注册表，启动 Steam 会失败。请检查 HKCU\\Software\\Valve\\Steam 的权限，或点击右侧按钮以管理员身份重启。";
+        var levelText = rid.HasValue
+            ? $"0x{rid.Value:X4}（{(lowIntegrity ? "Low" : "Medium 或更高")}）"
+            : "未知";
 
-        AppendLog("警告：当前进程无法写入 Steam 注册表，已阻止自动启动 Steam。");
+        EnvBannerText.Text =
+            $"完整性：{levelText} · 注册表可写：否。自动启动 Steam 时会请求管理员权限（UAC），请在弹窗中点“是”。" +
+            "也可以点“复制路径”，用 Win+R 直接运行本程序，或从资源管理器双击。";
+
+        AppendLog("警告：当前进程无法写入 Steam 注册表；启动 Steam 时将请求 UAC 提权。");
+    }
+
+    private void CopyPath_Click(object sender, RoutedEventArgs e)
+    {
+        var path = Environment.ProcessPath;
+        if (string.IsNullOrEmpty(path))
+        {
+            return;
+        }
+
+        try
+        {
+            Clipboard.SetText(path);
+            AppendLog("已复制程序路径：" + path);
+        }
+        catch (Exception ex)
+        {
+            AppendLog("复制失败：" + ex.Message);
+        }
     }
 
     private void Elevate_Click(object sender, RoutedEventArgs e)

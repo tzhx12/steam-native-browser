@@ -44,8 +44,8 @@ internal static class ProcessIntegrity
         public SidAndAttributes Label;
     }
 
-    /// <summary>当前进程是否低于 Medium（例如 Low 完整性沙箱）。</summary>
-    public static bool IsBelowMediumIntegrity()
+    /// <summary>返回当前进程的完整性级别 RID（Low=0x1000, Medium=0x2000, High=0x3000）。</summary>
+    public static int? GetIntegrityRid()
     {
         var token = IntPtr.Zero;
         var buffer = IntPtr.Zero;
@@ -53,32 +53,31 @@ internal static class ProcessIntegrity
         {
             if (!OpenProcessToken(GetCurrentProcess(), TokenQuery, out token))
             {
-                return false;
+                return null;
             }
 
             GetTokenInformation(token, TokenIntegrityLevel, IntPtr.Zero, 0, out var size);
             if (size <= 0)
             {
-                return false;
+                return null;
             }
 
             buffer = Marshal.AllocHGlobal(size);
             if (!GetTokenInformation(token, TokenIntegrityLevel, buffer, size, out _))
             {
-                return false;
+                return null;
             }
 
             var label = Marshal.PtrToStructure<TokenMandatoryLabel>(buffer);
             var countPointer = GetSidSubAuthorityCount(label.Label.Sid);
             var count = Marshal.ReadByte(countPointer);
             var subAuthority = GetSidSubAuthority(label.Label.Sid, (uint)(count - 1));
-            var rid = Marshal.ReadInt32(subAuthority);
 
-            return rid < SecurityMandatoryMediumRid;
+            return Marshal.ReadInt32(subAuthority);
         }
         catch
         {
-            return false;
+            return null;
         }
         finally
         {
@@ -92,6 +91,12 @@ internal static class ProcessIntegrity
                 CloseHandle(token);
             }
         }
+    }
+
+    /// <summary>当前进程是否低于 Medium（例如 Low 完整性沙箱）。</summary>
+    public static bool IsBelowMediumIntegrity()
+    {
+        return GetIntegrityRid() is int rid && rid < SecurityMandatoryMediumRid;
     }
 
     public static bool IsElevated()
