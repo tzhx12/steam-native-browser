@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <AssemblyName>SteamNativeBrowser</AssemblyName>
+    <RootNamespace>SteamNativeBrowser</RootNamespace>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <Product>Steam 原生浏览器</Product>
+    <AssemblyTitle>Steam 原生浏览器</AssemblyTitle>
+    <Description>从 Steam 进程内部调出原生 Chromium 窗口</Description>
+    <Version>1.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <!-- 关闭单文件分析器，避免在离线环境引入 Microsoft.NET.ILLink.Tasks 包 -->
+    <EnableSingleFileAnalyzer>false</EnableSingleFileAnalyzer>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app.ico" />
+  </ItemGroup>
+
+</Project>
