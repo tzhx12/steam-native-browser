@@ -16,8 +16,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ImplicitUsings>enable</ImplicitUsings>
     <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
-    <Version>2.2.0</Version>
-    <FileVersion>2.2.0.0</FileVersion>
+    <Version>2.3.0</Version>
+    <FileVersion>2.3.0.0</FileVersion>
     <Product>Steam 原生浏览器</Product>
     <AssemblyTitle>Steam 原生浏览器</AssemblyTitle>
     <Description>从 Steam 进程内部调出原生 Chromium 窗口（WinUI 3）</Description>
@@ -46,6 +46,7 @@
     </Content>
   </ItemGroup>
 </Project>
+
 
 
 

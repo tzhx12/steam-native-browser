@@ -56,6 +56,23 @@
                 </StackPanel>
             </Border>
 
+            <!-- GitHub -->
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="GitHub 项目" Style="{StaticResource SectionTitleStyle}" />
+                    <TextBlock Style="{StaticResource MutedBodyStyle}"
+                               Text="源代码、更新日志与问题反馈都在 GitHub 上：tzhx12/steam-native-browser。" />
+                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,2,0,0">
+                        <HyperlinkButton Content="仓库主页"
+                                         NavigateUri="https://github.com/tzhx12/steam-native-browser" />
+                        <HyperlinkButton Content="Releases"
+                                         NavigateUri="https://github.com/tzhx12/steam-native-browser/releases" />
+                        <HyperlinkButton Content="问题反馈"
+                                         NavigateUri="https://github.com/tzhx12/steam-native-browser/issues" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!-- 链接 -->
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="6">
