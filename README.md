@@ -1,92 +1,90 @@
-# Steam Native Browser
+# Steam 原生浏览器
 
-**Open a real Chromium window from inside Steam's own CEF process.**
+**从 Steam 自己的 CEF 进程内部，弹出一个完整的 Chromium 窗口。**
+
+**简体中文** · [English](README.en.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4)
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
 ![WinUI](https://img.shields.io/badge/UI-WinUI%203%20%2F%20Windows%20App%20SDK%201.7-0067C0)
 
-Steam's built-in browser is a stripped-down CEF view without tabs or an address bar. Steam Native Browser
-locates your Steam installation, enables the CEF debugging port (`127.0.0.1:8080`), and asks Steam's own
-browser process to open a **full Chromium window** — tab strip, omnibox, bookmarks, extensions and all.
+Steam 内置浏览器是一个没有地址栏、没有多标签的简化 CEF 视图。**Steam 原生浏览器**会自动定位 Steam，
+开启 CEF 调试端口（`127.0.0.1:8080`），然后让 Steam 自己的浏览器进程打开一个**完整的 Chromium 窗口**——
+标签栏、地址栏、书签、扩展按钮一应俱全。
 
-The UI is built with **WinUI 3 / Windows App SDK 1.7** on **.NET 8**, with Mica, Fluent controls,
-light/dark themes, a settings page (accent color) and an about page.
+界面使用 **WinUI 3 / Windows App SDK 1.7** + **.NET 8** 构建，支持 Mica、Fluent 控件、明暗主题，
+并带有设置页（强调色）与关于页。
 
-> The application UI is in Simplified Chinese; this README documents it in English.
+![主页](docs/winui-home.png)
 
-![Home](docs/winui-home.png)
-
-| About | Settings |
+| 关于 | 设置 |
 |---|---|
-| ![About](docs/winui-about.png) | ![Settings](docs/winui-settings.png) |
+| ![关于](docs/winui-about.png) | ![设置](docs/winui-settings.png) |
 
-## Highlights
+## 亮点
 
-- **Automatic Steam discovery** — registry (`HKCU\Software\Valve\Steam`, `HKLM\...\Valve\Steam`), running
-  `steam.exe`, common install paths, and a fixed-drive fallback scan.
-- **Automatic CEF mode** — probes `127.0.0.1:8080`, verifies the `Valve Steam Client` user agent, and if
-  needed restarts Steam with `-cef-enable-debugging -dev`.
-- **Two launch modes** — a plugin-free DevTools mode and an optional extension mode, with automatic fallback.
-- **Permission-aware** — if the current process cannot write Steam's registry key (low-integrity sandbox or a
-  key rewritten by an elevated process), the app requests UAC **for Steam only**.
-- **WinUI 3 shell** — Mica backdrop, NavigationView, SelectorBar, InfoBar, rounded cards, Fluent icons.
-- **Configurable accent color** — follow Windows by default, or pin one of 8 built-in colors.
+- **自动定位 Steam**：注册表（`HKCU\Software\Valve\Steam`、`HKLM\...\Valve\Steam`）、运行中的
+  `steam.exe`、常见安装目录，最后兜底扫描固定磁盘。
+- **自动开启 CEF 调试**：探测 `127.0.0.1:8080` 并校验 `Valve Steam Client` UA；没开就使用
+  `-cef-enable-debugging -dev` 启动 Steam（必要时先请求退出）。
+- **两种调出方式**：无需插件的 DevTools 方式，或可选的扩展方式，失败自动回退。
+- **权限自适应**：进程无法写 Steam 注册表时（低权限/沙箱，或注册表键被高权限改写过），
+  自动请求 UAC **只提权 Steam**。
+- **WinUI 3 界面**：Mica 背景、NavigationView、SelectorBar、InfoBar、圆角卡片、Fluent 图标。
+- **可配置强调色**：默认跟随 Windows，也可固定为 8 种内置颜色之一。
 
-## How it works
+## 工作原理
 
 ```
 ┌──────────────────────────────────────┐
 │ steam.exe                            │
 │  └─ steamwebhelper.exe  (CEF 126)    │
 │       ├─ 127.0.0.1:8080              │  ← /json/version, /json/list
-│       └─ the Chromium window we open │
+│       └─ 我们打开的 Chromium 窗口     │
 └──────────────────────────────────────┘
                  ▲
                  │ WebSocket / CDP
         SteamNativeBrowser.exe
 ```
 
-| Mode | Mechanism | Dependency |
+| 方式 | 机制 | 依赖 |
 |---|---|---|
-| **Built-in** (default) | Browser-level CDP `Target.createTarget` → Steam creates a new Chromium window | None |
-| **Extension** | Connect to an extension's MV3 service worker and call `chrome.windows.create` | At least one extension background running |
+| **内置方式**（默认） | 浏览器级 CDP `Target.createTarget` → 由 Steam 新建 Chromium 窗口 | 无 |
+| **插件方式** | 连接扩展的 MV3 Service Worker，调用 `chrome.windows.create` | 至少一个扩展后台在运行 |
 
-The built-in mode is the important finding: **no extension is required**. CEF exposes a browser-level
-WebSocket endpoint in `/json/version`, and `Target.createTarget` makes the Steam process create a full window.
+内置方式是最关键的发现：**完全不需要任何插件**。CEF 的 `/json/version` 暴露了浏览器级 WebSocket 地址，
+`Target.createTarget` 就能让 Steam 进程创建一个完整窗口。
 
-## Download
+## 下载
 
-Grab the latest **Portable** zip from [Releases](../../releases), extract it anywhere and run
-`SteamNativeBrowser.exe`. The package is self-contained: it bundles the Windows App SDK runtime and the
-.NET runtime, so no installation is needed.
+从 [Releases](https://github.com/tzhx12/steam-native-browser/releases/latest) 下载最新 **Portable** 压缩包，
+解压后直接运行 `SteamNativeBrowser.exe`。该包**自包含** Windows App SDK 运行时与 .NET 运行时，无需安装。
 
-Requirements:
+系统要求：
 
-- Windows 10 1809+ or Windows 11 (x64)
-- Steam installed and signed in at least once
+- Windows 10 1809+ 或 Windows 11（x64）
+- Steam 已安装并至少登录过一次
 
-## Usage
+## 使用
 
-1. Launch `SteamNativeBrowser.exe`.
-2. Confirm the detected Steam path (use **Browse…** if it is wrong).
-3. Pick a launch mode (built-in is recommended) and optionally a URL.
-4. Click **Open Browser Window**.
+1. 启动 `SteamNativeBrowser.exe`。
+2. 确认自动检测到的 Steam 路径（不对就点「浏览…」）。
+3. 选择调出方式（推荐内置方式），按需填写要打开的地址。
+4. 点「一键调出浏览器窗口」。
 
-If Steam is not running in CEF mode, the app handles it — including a UAC prompt when Steam needs elevated
-rights to write its registry key.
+如果 Steam 没开 CEF，程序会自动处理；需要时会在启动 Steam 时请求 UAC。
 
-Validated: Windows 11, Steam CEF `Chrome/126.0.6478.183`, built-in and extension modes both tested.
+已验证：Windows 11，Steam CEF `Chrome/126.0.6478.183`，内置方式与插件方式均通过。
 
-## Settings
+## 设置
 
-- **Accent color** — follow the system accent (default) or pick a custom color. Applied on restart.
-- Stored at `%LOCALAPPDATA%\SteamNativeBrowser\settings.json`.
+- **强调色**：默认跟随系统，也可选择 8 种内置颜色；点「应用并重启」后全局生效。
+- 设置保存在 `%LOCALAPPDATA%\SteamNativeBrowser\settings.json`。
 
-## Build from source
+## 从源码构建
 
-Requirements: .NET 8 SDK, Windows 10/11 SDK (the NuGet packages are restored automatically).
+需要 .NET 8 SDK 与 Windows 10/11 SDK（NuGet 包会自动还原）。
 
 ```powershell
 git clone https://github.com/tzhx12/steam-native-browser.git
@@ -94,44 +92,42 @@ cd steam-native-browser
 dotnet build src\SteamNativeBrowser.WinUI\SteamNativeBrowser.WinUI.csproj -c Release
 ```
 
-Portable publish:
+便携版发布：
 
 ```powershell
 dotnet publish src\SteamNativeBrowser.WinUI\SteamNativeBrowser.WinUI.csproj `
   -c Release -r win-x64 --self-contained true -o dist-winui
 ```
 
-WinUI 3 needs the Windows App SDK 1.7 packages plus `Microsoft.Windows.SDK.BuildTools.MSIX` when Visual
-Studio's MSIX tooling is not installed. The repository includes `tools/fetch_nuget.py` (stdlib-only, respects
-`HTTPS_PROXY`) to pre-fetch packages into a local feed for offline builds; see `NuGet.config` and
-`build-winui.ps1`.
+WinUI 3 需要 Windows App SDK 1.7 相关包；未安装 Visual Studio 的 MSIX 工具时还需要
+`Microsoft.Windows.SDK.BuildTools.MSIX`。本仓库提供 `tools/fetch_nuget.py`（仅标准库、支持 `HTTPS_PROXY`）
+用于离线预取 NuGet 包，参见 `NuGet.config` 与 `build-winui.ps1`。
 
-## Repository layout
+## 目录结构
 
 ```
 src/
-  SteamNativeBrowser.WinUI/   WinUI 3 app (main)
-    Pages/                    Home, About, Settings
-    Services/                 settings, accent color
-  SteamNativeBrowser/         legacy WPF app
-    Services/                 shared UI-agnostic services (Steam, CEF, CDP)
-dist/                         legacy single-file WPF build
-docs/                         screenshots
-tools/                        icon pipeline, offline NuGet fetcher
+  SteamNativeBrowser.WinUI/   WinUI 3 主程序
+    Pages/                    主页、关于、设置
+    Services/                 设置、强调色
+  SteamNativeBrowser/         旧版 WPF
+    Services/                 与 UI 无关的共享服务（Steam、CEF、CDP）
+dist/                         旧版 WPF 单文件
+docs/                         截图
+tools/                        图标管线、离线 NuGet 下载器
 ```
 
-## Permissions & security notes
+## 权限与安全提示
 
-- `-cef-enable-debugging` opens an **unauthenticated** DevTools port on `127.0.0.1:8080`. Any local process
-  can connect while it is open. Start Steam normally when you do not need this tool.
-- The app modifies Steam's launch arguments and may restart Steam. Make sure nothing important is pending.
-- Windows may show a publisher warning for the unsigned executable; choose **Run**.
-- The window belongs to Steam's CEF. It shares Steam's web cache and extensions and closes with Steam. It is
-  **not** your installed Chrome profile.
+- `-cef-enable-debugging` 会在 `127.0.0.1:8080` 开放**无鉴权**的调试端口，本机任意程序都能连接；
+  不需要时应以正常方式启动 Steam。
+- 程序会修改 Steam 启动参数并可能重启 Steam，请确认没有未保存的操作。
+- 可执行文件未签名，Windows 可能提示“无法验证发布者”，选择「运行」即可。
+- 调出的窗口属于 Steam 的 CEF，共享 Steam 的网页缓存与扩展，会随 Steam 退出而关闭；
+  它**不是**你系统里安装的 Chrome 配置。
 
-## License
+## 许可证
 
 [MIT](LICENSE) © 2026 SteamNativeLauncher contributors
 
-UI built with Microsoft WinUI 3 / Windows App SDK (MIT). Window creation uses the Chrome DevTools Protocol.
-App icon generated for this project.
+界面基于 Microsoft WinUI 3 / Windows App SDK（MIT）；窗口创建使用 Chrome DevTools Protocol；应用图标为项目定制生成。
